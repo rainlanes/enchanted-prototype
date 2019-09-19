@@ -5,34 +5,19 @@ let controls;
 let renderer;
 let scene;
 
-let mesh;
-let mesh2;
+var mesh,mesh2;
 
-let pawn1;
-let pawn2;
-let pawn3;
-let pawn4;
-let pawn5;
-let pawn6;
-let pawn7;
-let pawn8;
-let blockMesh1;
-let blockMesh2;
-let blockMesh3;
-let blockMesh4;
-let blockMesh5;
-let blockMesh6;
-let blockMesh7;
-let blockMesh8;
-let blockMesh9;
-let blockMesh10;
-let blockMesh11;
-let blockMesh12;
+var wizardP,queenP,hunterP,maidenP,enchantedP;
+var wizardE,queenE,hunterE,maidenE,enchantedE;
+
+var blockMesh1,blockMesh2,blockMesh3,blockMesh4,blockMesh5,blockMesh6,blockMesh7,blockMesh8,blockMesh9,blockMesh10,blockMesh11,blockMesh12;
 
 let raycaster;
 let mouse;
 
 var selectedPawn = [];
+var capturedByP = [];
+var capturedByE = [];
 
 class Block {
   constructor(positionX, positionY, name, isFilled) {
@@ -59,20 +44,20 @@ var block11,
 var boardArr;
 
 function initBlock() {
-  block11 = new Block(1, 1, "block11", true);
-  block12 = new Block(1, 2, "block12", false);
-  block13 = new Block(1, 3, "block13", false);
-  block14 = new Block(1, 4, "block14", true);
+  block11 = new Block(1, 1, "11", true);
+  block12 = new Block(1, 2, "12", false);
+  block13 = new Block(1, 3, "13", false);
+  block14 = new Block(1, 4, "14", true);
 
-  block21 = new Block(2, 1, "block21", true);
-  block22 = new Block(2, 2, "block22", true);
-  block23 = new Block(2, 3, "block23", true);
-  block24 = new Block(2, 4, "block24", true);
+  block21 = new Block(2, 1, "21", true);
+  block22 = new Block(2, 2, "22", true);
+  block23 = new Block(2, 3, "23", true);
+  block24 = new Block(2, 4, "24", true);
 
-  block31 = new Block(3, 1, "block31", true);
-  block32 = new Block(3, 2, "block32", false);
-  block33 = new Block(3, 3, "block33", false);
-  block34 = new Block(3, 4, "block34", true);
+  block31 = new Block(3, 1, "31", true);
+  block32 = new Block(3, 2, "32", false);
+  block33 = new Block(3, 3, "33", false);
+  block34 = new Block(3, 4, "34", true);
 }
 
 function init() {
@@ -102,7 +87,7 @@ function init() {
     block33,
     block34
   ];
-
+  
   // start the animation loop
   renderer.setAnimationLoop(() => {
     update();
@@ -118,7 +103,7 @@ function createCamera() {
     100 // far clipping plane
   );
 
-  camera.position.set(-7, 12, -11);
+  camera.position.set(-9, 10, 20);
 }
 
 function createControls() {
@@ -139,72 +124,72 @@ function createLights() {
 }
 
 function createMaterials() {
-  const board = new THREE.MeshStandardMaterial({
+  const boardMat = new THREE.MeshStandardMaterial({
     color: 0xe6e0d4, // white
-    flatShading: true
+	flatShading: true
   });
 
   // just as with textures, we need to put colors into linear color space
-  board.color.convertSRGBToLinear();
+  boardMat.color.convertSRGBToLinear();
 
   const pawnMat1 = new THREE.MeshStandardMaterial({
-    color: 0xff3333, // red
-    flatShading: true
+    color: 0x33ffff, // red
+	flatShading: true
   });
 
   pawnMat1.color.convertSRGBToLinear();
 
   const pawnMat2 = new THREE.MeshStandardMaterial({
-    color: 0xff3333, // red
-    flatShading: true
+    color: 0x33ffff, // red
+	flatShading: true
   });
 
   pawnMat2.color.convertSRGBToLinear();
 
   const pawnMat3 = new THREE.MeshStandardMaterial({
-    color: 0xff3333, // red
-    flatShading: true
+    color: 0x33ffff, // red
+	flatShading: true
   });
 
   pawnMat3.color.convertSRGBToLinear();
 
   const pawnMat4 = new THREE.MeshStandardMaterial({
-    color: 0xff3333, // red
-    flatShading: true
+    color: 0x33ffff, // red
+	flatShading: true
   });
 
   pawnMat4.color.convertSRGBToLinear();
 
   const pawnMat5 = new THREE.MeshStandardMaterial({
-    color: 0x33ffff, // blue
-    flatShading: true
+    color: 0xff3333, // blue
+	flatShading: true
   });
 
   pawnMat5.color.convertSRGBToLinear();
 
   const pawnMat6 = new THREE.MeshStandardMaterial({
-    color: 0x33ffff, // blue
-    flatShading: true
+    color: 0xff3333, // blue
+	flatShading: true
   });
 
   pawnMat6.color.convertSRGBToLinear();
 
   const pawnMat7 = new THREE.MeshStandardMaterial({
-    color: 0x33ffff, // blue
-    flatShading: true
+    color: 0xff3333, // blue
+	flatShading: true
   });
 
   pawnMat7.color.convertSRGBToLinear();
 
   const pawnMat8 = new THREE.MeshStandardMaterial({
-    color: 0x33ffff, // blue
-    flatShading: true
+    color: 0xff3333, // blue
+	flatShading: true
   });
 
   pawnMat8.color.convertSRGBToLinear();
 
   return {
-    board,
+    boardMat,
     pawnMat1,
     pawnMat2,
     pawnMat3,
@@ -220,11 +205,11 @@ function createGeometries() {
   const blockMesh = new THREE.BoxBufferGeometry(2, 0.25, 2);
 
   // we can reuse a single cylinder geometry for all 4 wheels
-  const pawn = new THREE.CylinderBufferGeometry(0.4, 0.4, 1.75, 10);
+  const pawnMesh = new THREE.CylinderBufferGeometry(0.4, 0.4, 1.75, 10);
 
   return {
     blockMesh,
-    pawn
+    pawnMesh
   };
 }
 
@@ -236,52 +221,52 @@ function createMeshes() {
   const materials = createMaterials();
   const geometries = createGeometries();
 
-  blockMesh1 = new THREE.Mesh(geometries.blockMesh, materials.board);
-  blockMesh1.name.set("block11");
+  blockMesh1 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  blockMesh1.name = "11";
   blockMesh1.position.set(-2.6, 0.21, 6.3);
 
-  blockMesh2 = new THREE.Mesh(geometries.blockMesh, materials.board);
-  blockMesh2.name.set("block12");
+  blockMesh2 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  blockMesh2.name = "21";
   blockMesh2.position.set(-0.55, 0.2, 6.3);
 
-  blockMesh3 = new THREE.Mesh(geometries.blockMesh, materials.board);
-  blockMesh3.name.set("block13");
+  blockMesh3 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  blockMesh3.name = "31";
   blockMesh3.position.set(1.5, 0.22, 6.3);
 
-  blockMesh4 = new THREE.Mesh(geometries.blockMesh, materials.board);
-  blockMesh4.name.set("block21");
+  blockMesh4 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  blockMesh4.name = "12";
   blockMesh4.position.set(-2.6, 0.25, 4.2);
 
-  blockMesh5 = new THREE.Mesh(geometries.blockMesh, materials.board);
-  blockMesh5.name.set("block22");
+  blockMesh5 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  blockMesh5.name = "22";
   blockMesh5.position.set(-0.56, 0.22, 4.2);
 
-  blockMesh6 = new THREE.Mesh(geometries.blockMesh, materials.board);
-  blockMesh6.name.set("block23");
+  blockMesh6 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  blockMesh6.name = "32";
   blockMesh6.position.set(1.5, 0.2, 4.2);
 
-  blockMesh7 = new THREE.Mesh(geometries.blockMesh, materials.board);
-  blockMesh7.name.set("block31");
+  blockMesh7 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  blockMesh7.name = "13";
   blockMesh7.position.set(-2.6, 0.21, 2.1);
 
-  blockMesh8 = new THREE.Mesh(geometries.blockMesh, materials.board);
-  blockMesh8.name.set("block32");
+  blockMesh8 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  blockMesh8.name = "23";
   blockMesh8.position.set(-0.55, 0.2, 2.1);
 
-  blockMesh9 = new THREE.Mesh(geometries.blockMesh, materials.board);
-  blockMesh9.name.set("block33");
+  blockMesh9 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  blockMesh9.name = "33";
   blockMesh9.position.set(1.5, 0.22, 2.1);
 
-  blockMesh10 = new THREE.Mesh(geometries.blockMesh, materials.board);
-  blockMesh10.name.set("block41");
+  blockMesh10 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  blockMesh10.name = "14";
   blockMesh10.position.set(-2.6, 0.2, 0);
 
-  blockMesh11 = new THREE.Mesh(geometries.blockMesh, materials.board);
-  blockMesh11.name.set("block42");
+  blockMesh11 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  blockMesh11.name = "24";
   blockMesh11.position.set(-0.54, 0.25, 0);
 
-  blockMesh12 = new THREE.Mesh(geometries.blockMesh, materials.board);
-  blockMesh12.name.set("block43");
+  blockMesh12 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  blockMesh12.name = "34";
   blockMesh12.position.set(1.56, 0.22, 0);
 
   board.add(
@@ -302,39 +287,39 @@ function createMeshes() {
   const defPawns = new THREE.Group();
   scene.add(defPawns);
 
-  pawn1 = new THREE.Mesh(geometries.pawn, materials.pawnMat1);
-  pawn1.name.set("board11");
-  pawn1.position.set(-2.5, 1.26, 6.3);
+  wizardP = new THREE.Mesh(geometries.pawnMesh, materials.pawnMat1);
+  wizardP.name = "11";
+  wizardP.position.set(-2.5, 1.26, 6.3);
 
-  pawn2 = new THREE.Mesh(geometries.pawn, materials.pawnMat2);
-  pawn2.name.set("board12");
-  pawn2.position.set(-0.54, 1.26, 6.3);
+  queenP = new THREE.Mesh(geometries.pawnMesh, materials.pawnMat2);
+  queenP.name = "21";
+  queenP.position.set(-0.54, 1.26, 6.3);
 
-  pawn3 = new THREE.Mesh(geometries.pawn, materials.pawnMat3);
-  pawn3.name.set("board13");
-  pawn3.position.set(1.56, 1.26, 6.3);
+  hunterP = new THREE.Mesh(geometries.pawnMesh, materials.pawnMat3);
+  hunterP.name = "31";
+  hunterP.position.set(1.56, 1.26, 6.3);
 
-  pawn4 = new THREE.Mesh(geometries.pawn, materials.pawnMat4);
-  pawn4.name.set("board22");
-  pawn4.position.set(-0.54, 1.26, 4.2);
+  maidenP = new THREE.Mesh(geometries.pawnMesh, materials.pawnMat4);
+  maidenP.name = "22";
+  maidenP.position.set(-0.54, 1.26, 4.2);
 
-  pawn5 = new THREE.Mesh(geometries.pawn, materials.pawnMat5);
-  pawn5.name.set("board14");
-  pawn5.position.set(-2.5, 1.26, 0);
+  hunterE = new THREE.Mesh(geometries.pawnMesh, materials.pawnMat5);
+  hunterE.name = "14";
+  hunterE.position.set(-2.5, 1.26, 0);
 
-  pawn6 = new THREE.Mesh(geometries.pawn, materials.pawnMat6);
-  pawn6.name.set("board24");
-  pawn6.position.set(-0.54, 1.26, 0);
+  queenE = new THREE.Mesh(geometries.pawnMesh, materials.pawnMat6);
+  queenE.name = "24";
+  queenE.position.set(-0.54, 1.26, 0);
 
-  pawn7 = new THREE.Mesh(geometries.pawn, materials.pawnMat7);
-  pawn7.name.set("board34");
-  pawn7.position.set(1.56, 1.26, 0);
+  wizardE = new THREE.Mesh(geometries.pawnMesh, materials.pawnMat7);
+  wizardE.name = "34";
+  wizardE.position.set(1.56, 1.26, 0);
 
-  pawn8 = new THREE.Mesh(geometries.pawn, materials.pawnMat8);
-  pawn8.name.set("board23");
-  pawn8.position.set(-0.54, 1.26, 2.1);
+  maidenE = new THREE.Mesh(geometries.pawnMesh, materials.pawnMat8);
+  maidenE.name = "23";
+  maidenE.position.set(-0.54, 1.26, 2.1);
 
-  defPawns.add(pawn1, pawn2, pawn3, pawn4, pawn5, pawn6, pawn7, pawn8);
+  defPawns.add(wizardP, queenP, hunterP, maidenP, hunterE, queenE, wizardE, maidenE);
 }
 
 function createRenderer() {
@@ -375,6 +360,63 @@ function onWindowResize() {
   renderer.setSize(container.clientWidth, container.clientHeight);
 }
 
+// Pawn Valid Move
+function isValidMove(xFrom, yFrom, xTo, yTo, object){
+	var xDist, yDist;
+	xDist = xTo - xFrom;
+	yDist = yTo - yFrom;
+		
+	// Player's Maiden
+	if(selectedPawn[0] == maidenP){
+		if((xFrom == xTo) &&  (yDist== 1)){
+			return true;
+		}
+	} 
+	// Player's Enchanted Maiden
+	else if(selectedPawn[0] == enchantedP){
+		if((xFrom-1 < xTo < xFrom+1)&&(yFrom-1 < yTo < yFrom+1)){
+			if(!((Math.abs(xDist) == 1)&&(yDist == 1))){
+				return true;
+			}
+		}
+	}
+	// Queen
+	else if((selectedPawn[0] == queenP) || (selectedPawn[0] == queenE)){
+		if((xFrom-1 < xTo < xFrom+1)&&(yFrom-1 < yTo < yFrom+1)){
+			return true;
+		}
+	}
+	// Wizard
+	else if(selectedPawn[0] == wizardP || (selectedPawn[0] == wizardE)){
+		if((Math.abs(xDist) == 1)&&(Math.abs(yDist) == 1)){
+			return true;
+		}
+	}
+	// Hunter
+	else if(selectedPawn[0] == hunterP || (selectedPawn[0] == hunterE)){
+		if((Math.abs(xDist) == 1)&&(yTo == yFrom)){
+			return true;
+		}else if((Math.abs(yDist) == 1)&&(xTo == xFrom)){
+			return true;
+		}
+	}
+	
+	// Enemy's Maiden
+	else if(selectedPawn[0] == maidenE){
+		if((xFrom == xTo) &&  (yDist== -1)){
+			return true;
+		}
+	}
+	// Enemy's Enchanted Maiden
+	else if(selectedPawn[0] == enchantedE){
+		if((xFrom-1 < xTo < xFrom+1)&&(yFrom-1 < yTo < yFrom+1)){
+			if(!((Math.abs(xDist) == 1)&&(yDist == -1))){
+				return true;
+			}
+		}
+	}
+}
+
 function onDocumentMouseDown(event) {
   //console.log("selectedPawn " + selectedPawn[0].object.position.x);
   event.preventDefault();
@@ -406,24 +448,45 @@ function onDocumentMouseDown(event) {
 
     if (intersects2.length > 0) {
       console.log("move to: " + intersects2[0].object.position.x);
-
+	
       for (var i = 0; i < 12; i++) {
         if (intersects2[0].object.name === boardArr[i].name) {
-          if (!boardArr[i].isFilled) {
-            selectedPawn[0].position.set(
-              intersects2[0].object.position.x,
-              selectedPawn[0].position.y,
-              intersects2[0].object.position.z
-            );
-
-            boardArr[i].isFilled.set(true);
-            scene.getObjectByName(selectedPawn[0].name).isFilled.set(false);
-            selectedPawn[0].name.set(boardArr[i].name);
-
-            console.log("moved pawn to " + selectedPawn[0].name);
-          } else {
-            alert("is filled");
-          }
+			console.log(selectedPawn[0].name + " >> " + intersects2[0].object.name + " >> " + boardArr[i].name);
+			
+			var x, y;
+			xFrom = selectedPawn[0].name.charAt(0);
+			yFrom = selectedPawn[0].name.charAt(1);
+			xTo = intersects2[0].object.name.charAt(0);
+			yTo = intersects2[0].object.name.charAt(1);
+			
+			console.log(xFrom +";"+yFrom+";"+xTo+";"+yTo);
+			
+			if(isValidMove(xFrom, yFrom, xTo, yTo, selectedPawn[0])){
+				 selectedPawn[0].position.set(
+				intersects2[0].object.position.x,
+				selectedPawn[0].position.y,
+				intersects2[0].object.position.z
+				);
+		        
+				boardArr[i].isFilled = true;
+				
+				for(var j=0;j<12;j++){
+					if(boardArr[j].name === selectedPawn[0].name){
+						console.log(boardArr[j].name + " >> " + boardArr[j].isFilled);
+						
+						boardArr[j].isFilled = false;
+						
+						console.log(boardArr[j].name + " >> " + boardArr[j].isFilled);
+						break;
+					}
+				}
+				
+				selectedPawn[0].name = boardArr[i].name;
+		        
+				console.log("moved pawn to " + selectedPawn[0].name);
+			} else{
+				console.log("Invalid Move pawn [" +selectedPawn[0]+"]");
+			}	
         }
       }
     }
@@ -433,7 +496,7 @@ function onDocumentMouseDown(event) {
   }
   // There is no pawn selected yet
   else {
-    mesh = [pawn1, pawn2, pawn3, pawn4, pawn5, pawn6, pawn7, pawn8]; // three.js objects with click handlers we are interested in
+    mesh = [wizardP, queenP, hunterP, maidenP, hunterE, queenE, wizardE, maidenE]; // three.js objects with click handlers we are interested in
 
     var intersects = raycaster.intersectObjects(mesh);
 
@@ -451,15 +514,16 @@ function onDocumentMouseDown(event) {
 }
 
 function setDefaultColor() {
-  pawn1.material.color.set(0xff0000);
-  pawn2.material.color.set(0xff0000);
-  pawn3.material.color.set(0xff0000);
-  pawn4.material.color.set(0xff0000);
+  wizardP.material.color.set(0x33ffff);
+  queenP.material.color.set(0x33ffff);
+  hunterP.material.color.set(0x33ffff);
+  maidenP.material.color.set(0x33ffff);
 
-  pawn5.material.color.set(0x33ffff);
-  pawn6.material.color.set(0x33ffff);
-  pawn7.material.color.set(0x33ffff);
-  pawn8.material.color.set(0x33ffff);
+  hunterE.material.color.set(0xff0000);
+  queenE.material.color.set(0xff0000);
+  wizardE.material.color.set(0xff0000);
+  maidenE.material.color.set(0xff0000);
+  
 }
 
 init();
