@@ -423,6 +423,7 @@ function onDocumentMouseDown(event) {
 		console.log(xFrom +"; "+yFrom+"; "+xTo+"; "+yTo);
 		
 		if(isValidMove(xFrom, yFrom, xTo, yTo, selectedPawn[0])){
+			// Capturing pawn stuffs code will goes here
 			if(selectedBlock[0].isFilled){
 				
 			} 
@@ -430,6 +431,7 @@ function onDocumentMouseDown(event) {
 			else{
 				
 			}	
+			// End of Capturing stuffs
 			
 			selectedBlock[0].isFilled = true;
 			
@@ -440,12 +442,12 @@ function onDocumentMouseDown(event) {
 				}
 			}
 			
-			if((selectedPawn[0].type === "maiden" && selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 4)){
-				selectedPawn[0].type = "enchanted";
-			} else if((selectedPawn[0].type === "maiden" && !selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 1)){
+			// Maiden arrived at opposite's castle
+			if(((selectedPawn[0].type === "maiden" && selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 4))||((selectedPawn[0].type === "maiden" && !selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 1))){
 				selectedPawn[0].type = "enchanted";
 			}
 			
+			// Move the selected pawn
 			selectedPawn[0].object.position.set(
 			selectedBlock[0].object.position.x,
 			selectedPawn[0].object.position.y,
@@ -454,9 +456,79 @@ function onDocumentMouseDown(event) {
 			
 			selectedPawn[0].positionX = selectedBlock[0].positionX;
 			selectedPawn[0].positionY = selectedBlock[0].positionY;
+			// End of moving the pawn
+			
+			// Win State: Queen is captured
+			if(selectedPawn[0].isPlayer){
+				var queenX, queenY;
+				for(var x=1;x<pawn.length;x++){
+					if((!pawn[x].isPlayer) && pawn[x].type === "queen"){
+						queenX = pawn[x].positionX;
+						queenY = pawn[x].positionY;
+						break;
+					}
+				}
+				
+				console.log(queenX+"; "+queenY);
+				
+				if(selectedBlock[0].positionX == queenX && selectedBlock[0].positionY == queenY){
+					alert("You have captured enemy's Queen. You win!");
+				}
+			} else{
+				var queenX, queenY;
+				for(var x=1;x<pawn.length;x++){
+					if((pawn[x].isPlayer) && pawn[x].type === "queen"){
+						queenX = pawn[x].positionX;
+						queenY = pawn[x].positionY;
+						break;
+					}
+				}
+				
+				console.log(queenX+"; "+queenY);
+				
+				if(selectedBlock[0].positionX == queenX && selectedBlock[0].positionY == queenY){
+					alert("Your Queen has captured! You lose");
+				}
+			}
+			
+			// Win state: Quuen arrived at Enemy's Castle and no pawn can kill the Queen
+			if(((selectedPawn[0].type === "queen" && selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 4))||((selectedPawn[0].type === "queen" && !selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 1))){
+				if(selectedPawn[0].isPlayer){
+					var validConquer = true;
+					
+					for(var x=1;x<pawn.length;x++){
+						if(!pawn[x].isPlayer){
+							if(isValidMove(pawn[x].positionX, pawn[x].positionY, selectedPawn[0].positionX, selectedPawn[0].positionY, pawn[x])){
+								validConquer = false;
+								break;
+							}
+						}
+					}
+					
+					if(validConquer){
+						alert("You have conquered enemy's castle. You win!");
+					}
+				} else{
+					var validConquer = true;
+					
+					for(var x=1;x<pawn.length;x++){
+						if(pawn[x].isPlayer){
+							if(isValidMove(pawn[x].positionX, pawn[x].positionY, selectedPawn[0].positionX, selectedPawn[0].positionY, pawn[x])){
+								validConquer = false;
+								break;
+							}
+						}
+					}
+					
+					if(validConquer){
+						alert("Enemy's Queen has conquered your castle! You lose");
+					}
+				}
+			}
 			
 			selectedPawn.pop();
 			selectedBlock.pop();
+			
 		} else{
 			console.log("Invalid Move pawn [" +selectedPawn[0]+"]");
 		}	
