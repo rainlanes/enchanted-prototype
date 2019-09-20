@@ -423,6 +423,14 @@ function onDocumentMouseDown(event) {
 		console.log(xFrom +"; "+yFrom+"; "+xTo+"; "+yTo);
 		
 		if(isValidMove(xFrom, yFrom, xTo, yTo, selectedPawn[0])){
+			if(selectedBlock[0].isFilled){
+				
+			} 
+			// No pawn in the selected Block
+			else{
+				
+			}	
+			
 			selectedBlock[0].isFilled = true;
 			
 			for(var j=0;j<12;j++){
@@ -430,6 +438,12 @@ function onDocumentMouseDown(event) {
 					board[j].isFilled = false;
 					break;
 				}
+			}
+			
+			if((selectedPawn[0].type === "maiden" && selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 4)){
+				selectedPawn[0].type = "enchanted";
+			} else if((selectedPawn[0].type === "maiden" && !selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 1)){
+				selectedPawn[0].type = "enchanted";
 			}
 			
 			selectedPawn[0].object.position.set(
