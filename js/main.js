@@ -16,6 +16,13 @@ class Block {
 	}
 }
 
+class JailBlock {
+	constructor(object, position) {
+		this.object = object;
+		this.position = position;
+	}
+}
+
 class Piece {
 	constructor(type, object, positionX, positionY, isPlayer) {
 		this.type = type;
@@ -26,18 +33,21 @@ class Piece {
 	}
 }
 
-var rcPawn,rcBlock;
+var rcPawn,rcBlock, rcCaptured;
 
 var pawn = [];
 var board = [];
+var jail = [];
 var blockMesh1,blockMesh2,blockMesh3,blockMesh4,blockMesh5,blockMesh6,blockMesh7,blockMesh8,blockMesh9,blockMesh10,blockMesh11,blockMesh12;
 var wizardP,queenP,hunterP,maidenP,enchantedP;
 var wizardE,queenE,hunterE,maidenE,enchantedE;
 
 var selectedPawn = [];
+var selectedCaptured = [];
 var capturedByP = [];
 var capturedByE = [];
 
+var playerTurn = true;
 
 function initBoard() {
   const materials = createMaterials();
@@ -80,51 +90,82 @@ function initBoard() {
   blockMesh12.position.set(1.56, 0.22, 0);
   
   board.push(new Block(1, 1, blockMesh1, true));
-  board.push(new Block(2, 1, blockMesh2, false));
-  board.push(new Block(3, 1, blockMesh3, false));
-  board.push(new Block(1, 2, blockMesh4, true));
+  board.push(new Block(2, 1, blockMesh2, true));
+  board.push(new Block(3, 1, blockMesh3, true));
+  board.push(new Block(1, 2, blockMesh4, false));
   board.push(new Block(2, 2, blockMesh5, true));
-  board.push(new Block(3, 2, blockMesh6, true));
-  board.push(new Block(1, 3, blockMesh7, true));
+  board.push(new Block(3, 2, blockMesh6, false));
+  board.push(new Block(1, 3, blockMesh7, false));
   board.push(new Block(2, 3, blockMesh8, true));
-  board.push(new Block(3, 3, blockMesh9, true));
-  board.push(new Block(1, 4, blockMesh10, false));
-  board.push(new Block(2, 4, blockMesh11, false));
+  board.push(new Block(3, 3, blockMesh9, false));
+  board.push(new Block(1, 4, blockMesh10, true));
+  board.push(new Block(2, 4, blockMesh11, true));
   board.push(new Block(3, 4, blockMesh12, true));
-  
+    
   for(var i = 0;i<board.length;i++){
 	scene.add(board[i].object);
+  }
+  
+  var jailMesh1, jailMesh2, jailMesh3, jailMesh4, jailMesh5, jailMesh6;
+  
+  jailMesh1 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  jailMesh1.position.set(-2.5, 0.22, 10);
+  
+  jailMesh2 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  jailMesh2.position.set(-0.5, 0.22, 10);
+  
+  jailMesh3 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  jailMesh3.position.set(1.5, 0.22, 10);
+  
+  jailMesh4 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  jailMesh4.position.set(-2.5, 0.22, -4);
+  
+  jailMesh5 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  jailMesh5.position.set(-0.5, 0.22, -4);
+  
+  jailMesh6 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  jailMesh6.position.set(1.5, 0.22, -4);
+  
+  jail.push(new JailBlock(jailMesh1, 1));
+  jail.push(new JailBlock(jailMesh2, 2));
+  jail.push(new JailBlock(jailMesh3, 3));
+  jail.push(new JailBlock(jailMesh4, 4));
+  jail.push(new JailBlock(jailMesh5, 5));
+  jail.push(new JailBlock(jailMesh6, 6));
+  
+  for(var i = 0;i<jail.length;i++){
+	scene.add(jail[i].object);
   }
 }
 
 function initPawn(){
   const materials = createMaterials();
   const geometries = createGeometries();
-	
-  wizardP = new THREE.Mesh(geometries.pawnMesh, materials.wizardPMat);
+
+  wizardP = new THREE.Mesh(geometries.pawnMesh, materials.pawnPMat);
   wizardP.position.set(-2.5, 1.26, 6.3);
 
-  queenP = new THREE.Mesh(geometries.pawnMesh, materials.queenPMat);
+  queenP = new THREE.Mesh(geometries.pawnMesh, materials.pawnPMat);
   queenP.position.set(-0.54, 1.26, 6.3);
 
-  hunterP = new THREE.Mesh(geometries.pawnMesh, materials.hunterPMat);
+  hunterP = new THREE.Mesh(geometries.pawnMesh, materials.pawnPMat);
   hunterP.position.set(1.56, 1.26, 6.3);
 
-  maidenP = new THREE.Mesh(geometries.pawnMesh, materials.maidenPMat);
+  maidenP = new THREE.Mesh(geometries.pawnMesh, materials.pawnPMat);
   maidenP.position.set(-0.54, 1.26, 4.2);
 
-  hunterE = new THREE.Mesh(geometries.pawnMesh, materials.hunterEMat);
+  hunterE = new THREE.Mesh(geometries.pawnMesh, materials.pawnEMat);
   hunterE.position.set(-2.5, 1.26, 0);
 
-  queenE = new THREE.Mesh(geometries.pawnMesh, materials.queenEMat);
+  queenE = new THREE.Mesh(geometries.pawnMesh, materials.pawnEMat);
   queenE.position.set(-0.54, 1.26, 0);
 
-  wizardE = new THREE.Mesh(geometries.pawnMesh, materials.wizardEMat);
+  wizardE = new THREE.Mesh(geometries.pawnMesh, materials.pawnEMat);
   wizardE.position.set(1.56, 1.26, 0);
 
-  maidenE = new THREE.Mesh(geometries.pawnMesh, materials.maidenEMat);
+  maidenE = new THREE.Mesh(geometries.pawnMesh, materials.pawnEMat);
   maidenE.position.set(-0.54, 1.26, 2.1);
-	
+
   pawn.push(new Piece("maiden", maidenP, 2, 2, true));
   pawn.push(new Piece("wizard", wizardP, 1, 1, true));
   pawn.push(new Piece("queen", queenP, 2, 1, true));
@@ -196,78 +237,30 @@ function createMaterials() {
   // just as with textures, we need to put colors into linear color space
   boardMat.color.convertSRGBToLinear();
 
-  const wizardPMat = new THREE.MeshStandardMaterial({
+  const pawnPMat = new THREE.MeshStandardMaterial({
     color: 0x33ffff, // red
 	flatShading: true
   });
 
-  wizardPMat.color.convertSRGBToLinear();
+  pawnPMat.color.convertSRGBToLinear();
 
-  const queenPMat = new THREE.MeshStandardMaterial({
-    color: 0x33ffff, // red
-	flatShading: true
-  });
-
-  queenPMat.color.convertSRGBToLinear();
-
-  const hunterPMat = new THREE.MeshStandardMaterial({
-    color: 0x33ffff, // red
-	flatShading: true
-  });
-
-  hunterPMat.color.convertSRGBToLinear();
-
-  const maidenPMat = new THREE.MeshStandardMaterial({
-    color: 0x33ffff, // red
-	flatShading: true
-  });
-
-  maidenPMat.color.convertSRGBToLinear();
-
-  const hunterEMat = new THREE.MeshStandardMaterial({
+  const pawnEMat = new THREE.MeshStandardMaterial({
     color: 0xff3333, // blue
 	flatShading: true
   });
 
-  hunterEMat.color.convertSRGBToLinear();
-
-  const queenEMat = new THREE.MeshStandardMaterial({
-    color: 0xff3333, // blue
-	flatShading: true
-  });
-
-  queenEMat.color.convertSRGBToLinear();
-
-  const wizardEMat = new THREE.MeshStandardMaterial({
-    color: 0xff3333, // blue
-	flatShading: true
-  });
-
-  wizardEMat.color.convertSRGBToLinear();
-
-  const maidenEMat = new THREE.MeshStandardMaterial({
-    color: 0xff3333, // blue
-	flatShading: true
-  });
-
-  maidenEMat.color.convertSRGBToLinear();
+  pawnEMat.color.convertSRGBToLinear();
 
   return {
     boardMat,
-    wizardPMat,
-    queenPMat,
-    hunterPMat,
-    maidenPMat,
-    hunterEMat,
-    queenEMat,
-    wizardEMat,
-    maidenEMat
+    pawnPMat,
+	pawnEMat
   };
 }
 
 function createGeometries() {
   const blockMesh = new THREE.BoxBufferGeometry(2, 0.25, 2);
-	
+
   const pawnMesh = new THREE.CylinderBufferGeometry(0.4, 0.4, 1.75, 10);
 
   return {
@@ -324,7 +317,7 @@ function isValidMove(xFrom, yFrom, xTo, yTo, object){
 	var xDist, yDist;
 	xDist = xTo - xFrom;
 	yDist = yTo - yFrom;
-		
+	
 	// Player's Maiden
 	if(object.type == "maiden" && object.isPlayer){
 		if((xFrom == xTo) &&  (yDist== 1)){
@@ -364,8 +357,7 @@ function isValidMove(xFrom, yFrom, xTo, yTo, object){
 		}else if((Math.abs(yDist) == 1)&&(xTo == xFrom)){
 			return true;
 		}
-	}
-	
+	}	
 	// Enemy's Maiden
 	else if((object.type == "maiden") && (!object.isPlayer)){
 		if((xFrom == xTo) &&  (yDist== -1)){
@@ -396,169 +388,385 @@ function onDocumentMouseDown(event) {
 
   raycaster.setFromCamera(mouse, camera);
 
-  if (selectedPawn.length > 0) {
-	rcBlock = [];
-	  
-    for(var i=0;i<board.length;i++){
-		rcBlock.push(board[i].object);
+  rcPawn = [];
+  rcCaptured = [];
+ 
+  rcBlock = [];	
+  for(var i=0;i<board.length;i++){
+	rcBlock.push(board[i].object);
+  }
+  
+  console.log("Player turn: " + playerTurn);
+  
+  if(playerTurn){
+	for(var i=0;i<pawn.length;i++){
+		if(pawn[i].isPlayer){
+			rcPawn.push(pawn[i].object);
+		}
 	}
 	
+	for(var i=0;i<capturedByP.length;i++){
+		rcCaptured.push(capturedByP[i].object);
+	}
+	
+  }else{
+	for(var i=0;i<pawn.length;i++){
+		if(!pawn[i].isPlayer){
+			rcPawn.push(pawn[i].object);
+		}
+	}
+	
+	for(var i=0;i<capturedByE.length;i++){
+		rcCaptured.push(capturedByE[i].object);
+	}
+  }
+  
+  if(selectedCaptured.length>0){
+	// Place Captured Pawn
     var intersectBlock = raycaster.intersectObjects(rcBlock);
 	var selectedBlock = [];
 	
-    if (intersectBlock.length > 0) {
+	if (intersectBlock.length > 0) {
 		for(var i=0;i<board.length;i++){
 			if(intersectBlock[0].object == board[i].object){
-			selectedBlock.push(board[i]);
-			console.log("selected block pos: " + board[i].positionX + ", " + board[i].positionY);
+				selectedBlock.push(board[i]);
+				console.log("selected block (to place captured pawn) pos: " + board[i].positionX + ", " + board[i].positionY);
+				break;
 			}
 		}
 		
-		var x, y;
-		xFrom = selectedPawn[0].positionX;
-		yFrom = selectedPawn[0].positionY;
-		xTo = selectedBlock[0].positionX;
-		yTo = selectedBlock[0].positionY;
-		
-		console.log(xFrom +"; "+yFrom+"; "+xTo+"; "+yTo);
-		
-		if(isValidMove(xFrom, yFrom, xTo, yTo, selectedPawn[0])){
-			// Capturing pawn stuffs code will goes here
-			if(selectedBlock[0].isFilled){
-				
-			} 
-			// No pawn in the selected Block
-			else{
-				
-			}	
-			// End of Capturing stuffs
-			
-			selectedBlock[0].isFilled = true;
-			
-			for(var j=0;j<12;j++){
-				if((board[j].positionX == selectedPawn[0].positionX)&&(board[j].positionY == selectedPawn[0].positionY)){
-					board[j].isFilled = false;
-					break;
-				}
-			}
-			
-			// Maiden arrived at opposite's castle
-			if(((selectedPawn[0].type === "maiden" && selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 4))||((selectedPawn[0].type === "maiden" && !selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 1))){
-				selectedPawn[0].type = "enchanted";
-			}
-			
-			// Move the selected pawn
-			selectedPawn[0].object.position.set(
-			selectedBlock[0].object.position.x,
-			selectedPawn[0].object.position.y,
-			selectedBlock[0].object.position.z
-			);
-			
-			selectedPawn[0].positionX = selectedBlock[0].positionX;
-			selectedPawn[0].positionY = selectedBlock[0].positionY;
-			// End of moving the pawn
-			
-			// Win State: Queen is captured
-			if(selectedPawn[0].isPlayer){
-				var queenX, queenY;
-				for(var x=1;x<pawn.length;x++){
-					if((!pawn[x].isPlayer) && pawn[x].type === "queen"){
-						queenX = pawn[x].positionX;
-						queenY = pawn[x].positionY;
-						break;
-					}
-				}
-				
-				console.log(queenX+"; "+queenY);
-				
-				if(selectedBlock[0].positionX == queenX && selectedBlock[0].positionY == queenY){
-					alert("You have captured enemy's Queen. You win!");
-				}
-			} else{
-				var queenX, queenY;
-				for(var x=1;x<pawn.length;x++){
-					if((pawn[x].isPlayer) && pawn[x].type === "queen"){
-						queenX = pawn[x].positionX;
-						queenY = pawn[x].positionY;
-						break;
-					}
-				}
-				
-				console.log(queenX+"; "+queenY);
-				
-				if(selectedBlock[0].positionX == queenX && selectedBlock[0].positionY == queenY){
-					alert("Your Queen has captured! You lose");
-				}
-			}
-			
-			// Win state: Quuen arrived at Enemy's Castle and no pawn can kill the Queen
-			if(((selectedPawn[0].type === "queen" && selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 4))||((selectedPawn[0].type === "queen" && !selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 1))){
-				if(selectedPawn[0].isPlayer){
-					var validConquer = true;
-					
-					for(var x=1;x<pawn.length;x++){
-						if(!pawn[x].isPlayer){
-							if(isValidMove(pawn[x].positionX, pawn[x].positionY, selectedPawn[0].positionX, selectedPawn[0].positionY, pawn[x])){
-								validConquer = false;
-								break;
-							}
-						}
-					}
-					
-					if(validConquer){
-						alert("You have conquered enemy's castle. You win!");
-					}
-				} else{
-					var validConquer = true;
-					
-					for(var x=1;x<pawn.length;x++){
-						if(pawn[x].isPlayer){
-							if(isValidMove(pawn[x].positionX, pawn[x].positionY, selectedPawn[0].positionX, selectedPawn[0].positionY, pawn[x])){
-								validConquer = false;
-								break;
-							}
-						}
-					}
-					
-					if(validConquer){
-						alert("Enemy's Queen has conquered your castle! You lose");
-					}
-				}
-			}
-			
-			selectedPawn.pop();
-			selectedBlock.pop();
-			
+		if(selectedBlock[0].isFilled){
+			selectedCaptured = [];
+			console.log("block is filled");
 		} else{
-			console.log("Invalid Move pawn [" +selectedPawn[0]+"]");
-		}	
-        
-    }
-
-    selectedPawn = [];
-  }
-  // There is no pawn selected yet
-  else {
-	rcPawn = [];
-	
-	for(var i=0;i<pawn.length;i++){
-		rcPawn.push(pawn[i].object);
+			console.log("selected captured pawn: " + selectedCaptured[0].positionX + ", " + selectedCaptured[0].positionY);
+			if(selectedCaptured[0].positionY == 0){
+				capturedByP = capturedByP.filter(function(value, index, arr){
+					return value != selectedCaptured[0];						
+				});
+			}else{
+				capturedByE = capturedByE.filter(function(value, index, arr){
+					return value != selectedCaptured[0];						
+				});
+			}
+			selectedCaptured[0].object.position.set(
+								selectedBlock[0].object.position.x,
+								selectedCaptured[0].object.position.y,
+								selectedBlock[0].object.position.z
+								);
+				
+			selectedCaptured[0].positionX = selectedBlock[0].positionX;
+			selectedCaptured[0].positionY = selectedBlock[0].positionY;
+			
+			console.log("selected captured pawn: " + selectedCaptured[0].positionX + ", " + selectedCaptured[0].positionY);
+			
+			pawn.push(selectedCaptured[0]);
+			
+			
+			if(playerTurn){
+				playerTurn = false;
+				console.log("Player moved captured pawn. is next player turn? " + playerTurn);
+			}else{ 
+				playerTurn = true;
+				console.log("Enemy moved captured pawn. is next player turn? " + playerTurn);
+			}
+		}
+		
+		selectedBlock = [];
+		selectedCaptured = [];
 	}
 	
-    var intersectPawn = raycaster.intersectObjects(rcPawn);
-
-    if (intersectPawn.length > 0){
-      // intersectPawn[0].object.callback();
-	  for(var i=0;i<pawn.length;i++){
-		if(intersectPawn[0].object == pawn[i].object){
-			selectedPawn.push(pawn[i]);
-			console.log("selected pawn pos: " + pawn[i].positionX + ", " + pawn[i].positionY);
+  }
+  else {
+	var intersectCaptured = raycaster.intersectObjects(rcCaptured);
+	// Add captured pawn as the selected pawn to be moved
+	if (intersectCaptured.length > 0) {
+		for(var x = 0;x<capturedByP.length;x++){
+			if(capturedByP[x].object == intersectCaptured[0].object){
+				selectedCaptured.push(capturedByP[x]);
+				break;
+			}
 		}
-	  }
-      
-    } else {
-      selectedPawn = [];
-    }
+		
+		for(var x = 0;x<capturedByE.length;x++){
+			if(capturedByE[x].object == intersectCaptured[0].object){
+				selectedCaptured.push(capturedByE[x]);
+				break;
+			}
+		}
+	} 
+	else {
+		selectedCaptured = [];
+		if (selectedPawn.length > 0) {
+					
+			var intersectBlock = raycaster.intersectObjects(rcBlock);
+			var selectedBlock = [];
+		
+			if (intersectBlock.length > 0) {
+				for(var i=0;i<board.length;i++){
+					if(intersectBlock[0].object == board[i].object){
+						selectedBlock.push(board[i]);
+						console.log("selected block pos: " + board[i].positionX + ", " + board[i].positionY);
+					}
+				}
+		
+				var x, y;
+				xFrom = selectedPawn[0].positionX;
+				yFrom = selectedPawn[0].positionY;
+				xTo = selectedBlock[0].positionX;
+				yTo = selectedBlock[0].positionY;
+				
+				console.log(xFrom +"; "+yFrom+"; "+xTo+"; "+yTo);
+							
+				if(isValidMove(xFrom, yFrom, xTo, yTo, selectedPawn[0])){
+					// Capturing pawn stuffs code will goes here
+					if(selectedBlock[0].isFilled){
+						var blockHasPawnP = false;
+						var capturedPawn;
+						for(var x=0;x<pawn.length;x++){
+							if((pawn[x].positionX == selectedBlock[0].positionX)&&(pawn[x].positionY == selectedBlock[0].positionY)){
+								if(pawn[x].isPlayer){
+									blockHasPawnP = true;
+								}
+								capturedPawn = pawn[x];
+								break;
+							}	
+						}
+				
+						if(selectedPawn[0].isPlayer){	
+							if(blockHasPawnP){
+								// Invalid move
+								console.log("Invalid move " + selectedPawn[0].object);
+							}
+							// Player can capture Enemy's pawn
+							else{
+								for(var j=0;j<12;j++){
+									if((board[j].positionX == selectedPawn[0].positionX)&&(board[j].positionY == selectedPawn[0].positionY)){
+										board[j].isFilled = false;
+										break;
+									}
+								}
+					
+								// Maiden arrived at opposite's castle
+								if(((selectedPawn[0].type === "maiden" && selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 4))||((selectedPawn[0].type === "maiden" && !selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 1))){
+									selectedPawn[0].type = "enchanted";
+								}
+								
+								// Move the selected pawn
+								selectedPawn[0].object.position.set(
+								selectedBlock[0].object.position.x,
+								selectedPawn[0].object.position.y,
+								selectedBlock[0].object.position.z
+								);
+								
+								selectedPawn[0].positionX = selectedBlock[0].positionX;
+								selectedPawn[0].positionY = selectedBlock[0].positionY;
+								// End of moving the pawn
+								
+								if(capturedPawn.type === "queen"){
+									alert("You have captured enemy's Queen. You win!");
+									location.reload();
+								} else {
+									pawn = pawn.filter(function(value, index, arr){
+										return value != capturedPawn;						
+									});
+									
+									
+									const materials = createMaterials();
+									const geometries = createGeometries();
+									
+									
+									var capturedMesh = new THREE.Mesh(geometries.pawnMesh, materials.pawnPMat);
+									capturedMesh.position.set(jail[capturedByP.length].object.position.x, capturedPawn.object.position.y, jail[capturedByP.length].object.position.z);
+									scene.add(capturedMesh);
+									
+									capturedByP.push(new Piece(capturedPawn.type, capturedMesh, capturedByP.length, 0, true));
+									
+								}
+								
+								
+								if(playerTurn){
+									playerTurn = false;
+									console.log("Player captured enemy's pawn. is next player turn? " + playerTurn);
+								}else{
+									playerTurn = true;
+									console.log("Enemy captured player's pawn. is next player turn? " + playerTurn);
+								}
+								
+								scene.remove(capturedPawn.object);
+								
+							}
+						} else{
+							// Enemy can capture Player's pawn
+							if(blockHasPawnP){
+								for(var j=0;j<12;j++){
+									if((board[j].positionX == selectedPawn[0].positionX)&&(board[j].positionY == selectedPawn[0].positionY)){
+										board[j].isFilled = false;
+										break;
+									}
+								}
+					
+								// Maiden arrived at opposite's castle
+								if(((selectedPawn[0].type === "maiden" && !selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 4))||((selectedPawn[0].type === "maiden" && !selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 1))){
+									selectedPawn[0].type = "enchanted";
+								}
+								
+								// Move the selected pawn
+								selectedPawn[0].object.position.set(
+								selectedBlock[0].object.position.x,
+								selectedPawn[0].object.position.y,
+								selectedBlock[0].object.position.z
+								);
+								
+								selectedPawn[0].positionX = selectedBlock[0].positionX;
+								selectedPawn[0].positionY = selectedBlock[0].positionY;
+								// End of moving the pawn
+								
+								if(capturedPawn.type === "queen"){
+									alert("Enemy has captured your Queen! You lose.");
+									location.reload();
+								} else {
+									pawn = pawn.filter(function(value, index, arr){
+										return value != capturedPawn;						
+									});
+									
+									
+									const materials = createMaterials();
+									const geometries = createGeometries();
+									
+									
+									var capturedMesh = new THREE.Mesh(geometries.pawnMesh, materials.pawnEMat);
+									capturedMesh.position.set(jail[capturedByE.length+3].object.position.x, capturedPawn.object.position.y, jail[capturedByE.length+3].object.position.z);
+									scene.add(capturedMesh);
+									
+									capturedByE.push(new Piece(capturedPawn.type, capturedMesh, capturedByE.length, 5, false));
+									
+								}
+								
+								scene.remove(capturedPawn.object);
+								
+								if(playerTurn){
+									playerTurn = false;
+									console.log("Player captured enemy's pawn. is next player turn? " + playerTurn);
+								}else{
+									playerTurn = true;
+									console.log("Enemy captured player's pawn. is next player turn? " + playerTurn);
+								}
+							}
+							else{
+								// Invalid move
+								console.log("Invalid move " + selectedPawn[0].object);
+							}
+						}
+						
+					}
+					// End of capturing stuffs
+					
+					// No pawn in the selected Block
+					else{
+						selectedBlock[0].isFilled = true;
+				
+						for(var j=0;j<12;j++){
+							if((board[j].positionX == selectedPawn[0].positionX)&&(board[j].positionY == selectedPawn[0].positionY)){
+								board[j].isFilled = false;
+								break;
+							}
+						}
+				
+						// Maiden arrived at opposite's castle
+						if(((selectedPawn[0].type === "maiden" && selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 4))||((selectedPawn[0].type === "maiden" && !selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 1))){
+							selectedPawn[0].type = "enchanted";
+						}
+				
+						// Move the selected pawn
+						selectedPawn[0].object.position.set(
+						selectedBlock[0].object.position.x,
+						selectedPawn[0].object.position.y,
+						selectedBlock[0].object.position.z
+						);
+						
+						selectedPawn[0].positionX = selectedBlock[0].positionX;
+						selectedPawn[0].positionY = selectedBlock[0].positionY;
+						// End of moving the pawn
+						
+						// Win state: Quuen arrived at Enemy's Castle and no pawn can kill the Queen
+						if(((selectedPawn[0].type === "queen" && selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 4))||((selectedPawn[0].type === "queen" && !selectedPawn[0].isPlayer) && (selectedBlock[0].positionY == 1))){
+							if(selectedPawn[0].isPlayer){
+								
+								var validConquer = true;
+						
+								for(var x=1;x<pawn.length;x++){
+									if(!pawn[x].isPlayer){
+										if(isValidMove(pawn[x].positionX, pawn[x].positionY, selectedPawn[0].positionX, selectedPawn[0].positionY, pawn[x])){
+											validConquer = false;
+											break;
+										}
+									}
+								}
+						
+								if(validConquer){
+									alert("You have conquered enemy's castle. You win!");
+									location.reload();
+								}
+							} else{
+								var validConquer = true;
+						
+								for(var x=1;x<pawn.length;x++){
+									if(pawn[x].isPlayer){
+										if(isValidMove(pawn[x].positionX, pawn[x].positionY, selectedPawn[0].positionX, selectedPawn[0].positionY, pawn[x])){
+											validConquer = false;
+											break;
+										}
+									}
+								}
+						
+								if(validConquer){
+									alert("Enemy's Queen has conquered your castle! You lose");
+									location.reload();
+								}
+							}
+						}
+						
+						
+						if(playerTurn){
+							playerTurn = false;
+							console.log("Player moved pawn. is next player turn? " + playerTurn);
+						}else{
+							playerTurn = true;
+							console.log("Enemy moved pawn. is next player turn? " + playerTurn);
+						}
+						
+					}	
+						
+					selectedPawn.pop();
+					selectedBlock.pop();
+				
+				} else{
+					console.log("Invalid Move pawn [" +selectedPawn[0]+"]");
+				}	
+				
+				selectedPawn = [];
+				
+			}
+		}
+		// There is no pawn selected yet
+		else {
+			
+			var intersectPawn = raycaster.intersectObjects(rcPawn);
+			
+			if (intersectPawn.length > 0){
+				// intersectPawn[0].object.callback();
+				for(var i=0;i<pawn.length;i++){
+					if(intersectPawn[0].object == pawn[i].object){
+						selectedPawn.push(pawn[i]);
+						console.log("selected pawn pos: " + pawn[i].positionX + ", " + pawn[i].positionY);
+					}
+				}
+			} else{
+				selectedPawn = [];
+			}
+		}
+	}
   }
 }
 
