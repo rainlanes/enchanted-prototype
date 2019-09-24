@@ -1,4 +1,3 @@
-// these need to be accessed inside more than one function so we'll declare them first
 let container;
 let camera;
 let controls;
@@ -106,7 +105,7 @@ function initBoard() {
 	scene.add(board[i].object);
   }
   
-  var jailMesh1, jailMesh2, jailMesh3, jailMesh4, jailMesh5, jailMesh6;
+  var jailMesh1, jailMesh2, jailMesh3, jailMesh4, jailMesh5, jailMesh6, jailMesh7, jailMesh8, jailMesh9, jailMesh10, jailMesh11, jailMesh12;
   
   jailMesh1 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
   jailMesh1.position.set(-2.5, 0.22, 10);
@@ -118,13 +117,31 @@ function initBoard() {
   jailMesh3.position.set(1.5, 0.22, 10);
   
   jailMesh4 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
-  jailMesh4.position.set(-2.5, 0.22, -4);
+  jailMesh4.position.set(-2.5, 0.22, 12);
   
   jailMesh5 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
-  jailMesh5.position.set(-0.5, 0.22, -4);
+  jailMesh5.position.set(-0.5, 0.22, 12);
   
   jailMesh6 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
-  jailMesh6.position.set(1.5, 0.22, -4);
+  jailMesh6.position.set(1.5, 0.22, 12);
+  
+  jailMesh7 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  jailMesh7.position.set(-2.5, 0.22, -4);
+  
+  jailMesh8 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  jailMesh8.position.set(-0.5, 0.22, -4);
+  
+  jailMesh9 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  jailMesh9.position.set(1.5, 0.22, -4);
+  
+  jailMesh10 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  jailMesh10.position.set(-2.5, 0.22, -6);
+  
+  jailMesh11 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  jailMesh11.position.set(-0.5, 0.22, -6);
+  
+  jailMesh12 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
+  jailMesh12.position.set(1.5, 0.22, -6);
   
   jail.push(new JailBlock(jailMesh1, 1));
   jail.push(new JailBlock(jailMesh2, 2));
@@ -132,6 +149,14 @@ function initBoard() {
   jail.push(new JailBlock(jailMesh4, 4));
   jail.push(new JailBlock(jailMesh5, 5));
   jail.push(new JailBlock(jailMesh6, 6));
+  
+  jail.push(new JailBlock(jailMesh7, 7));
+  jail.push(new JailBlock(jailMesh8, 8));
+  jail.push(new JailBlock(jailMesh9, 9));
+  jail.push(new JailBlock(jailMesh10, 10));
+  jail.push(new JailBlock(jailMesh11, 11));
+  jail.push(new JailBlock(jailMesh12, 12));
+
   
   for(var i = 0;i<jail.length;i++){
 	scene.add(jail[i].object);
@@ -377,7 +402,6 @@ function isValidMove(xFrom, yFrom, xTo, yTo, object){
 }
 
 function onDocumentMouseDown(event) {
-  //console.log("selectedPawn " + selectedPawn[0].object.position.x);
   event.preventDefault();
 
   raycaster = new THREE.Raycaster();
@@ -396,7 +420,7 @@ function onDocumentMouseDown(event) {
 	rcBlock.push(board[i].object);
   }
   
-  console.log("Player turn: " + playerTurn);
+  // console.log("Player turn: " + playerTurn);
   
   if(playerTurn){
 	for(var i=0;i<pawn.length;i++){
@@ -430,7 +454,7 @@ function onDocumentMouseDown(event) {
 		for(var i=0;i<board.length;i++){
 			if(intersectBlock[0].object == board[i].object){
 				selectedBlock.push(board[i]);
-				console.log("selected block (to place captured pawn) pos: " + board[i].positionX + ", " + board[i].positionY);
+				// console.log("selected block (to place captured pawn) pos: " + board[i].positionX + ", " + board[i].positionY);
 				break;
 			}
 		}
@@ -439,42 +463,81 @@ function onDocumentMouseDown(event) {
 			selectedCaptured = [];
 			console.log("block is filled");
 		} else{
-			console.log("selected captured pawn: " + selectedCaptured[0].positionX + ", " + selectedCaptured[0].positionY);
+			// Select player' capture
 			if(selectedCaptured[0].positionY == 0){
-				capturedByP = capturedByP.filter(function(value, index, arr){
-					return value != selectedCaptured[0];						
-				});
-			}else{
-				capturedByE = capturedByE.filter(function(value, index, arr){
-					return value != selectedCaptured[0];						
-				});
-			}
-			selectedCaptured[0].object.position.set(
-								selectedBlock[0].object.position.x,
-								selectedCaptured[0].object.position.y,
-								selectedBlock[0].object.position.z
-								);
+				if(selectedBlock[0].positionY != 4){
+					selectedCaptured[0].object.position.set(
+									selectedBlock[0].object.position.x,
+									selectedCaptured[0].object.position.y,
+									selectedBlock[0].object.position.z
+									);
+					
+					selectedCaptured[0].positionX = selectedBlock[0].positionX;
+					selectedCaptured[0].positionY = selectedBlock[0].positionY;
+					
+					// console.log("selected captured pawn: " + selectedCaptured[0].positionX + ", " + selectedCaptured[0].positionY);
+					
+					pawn.push(selectedCaptured[0]);
+					
+					capturedByP = capturedByP.filter(function(value, index, arr){
+						return value != selectedCaptured[0];						
+					});
+					
+					if(playerTurn){
+						playerTurn = false;
+						console.log("Player moved captured pawn. is next player turn? " + playerTurn);
+					}else{ 
+						playerTurn = true;
+						console.log("Enemy moved captured pawn. is next player turn? " + playerTurn);
+					}
+					selectedBlock[0].isFilled = true;
+				} else{
+					console.log("Maiden can't be placed at enemy's castle!");
+				}
 				
-			selectedCaptured[0].positionX = selectedBlock[0].positionX;
-			selectedCaptured[0].positionY = selectedBlock[0].positionY;
-			
-			console.log("selected captured pawn: " + selectedCaptured[0].positionX + ", " + selectedCaptured[0].positionY);
-			
-			pawn.push(selectedCaptured[0]);
-			
-			
-			if(playerTurn){
-				playerTurn = false;
-				console.log("Player moved captured pawn. is next player turn? " + playerTurn);
-			}else{ 
-				playerTurn = true;
-				console.log("Enemy moved captured pawn. is next player turn? " + playerTurn);
 			}
+			// Select enemy' capture
+			else{
+				if(selectedBlock[0].positionY != 1){
+					selectedCaptured[0].object.position.set(
+									selectedBlock[0].object.position.x,
+									selectedCaptured[0].object.position.y,
+									selectedBlock[0].object.position.z
+									);
+					
+					selectedCaptured[0].positionX = selectedBlock[0].positionX;
+					selectedCaptured[0].positionY = selectedBlock[0].positionY;
+					
+					// console.log("selected captured pawn: " + selectedCaptured[0].positionX + ", " + selectedCaptured[0].positionY);
+					
+					pawn.push(selectedCaptured[0]);
+					
+					capturedByE = capturedByE.filter(function(value, index, arr){
+						return value != selectedCaptured[0];						
+					});
+					
+					
+					if(playerTurn){
+						playerTurn = false;
+						console.log("Player moved captured pawn. is next player turn? " + playerTurn);
+					}else{ 
+						playerTurn = true;
+						console.log("Enemy moved captured pawn. is next player turn? " + playerTurn);
+					}
+					
+					selectedBlock[0].isFilled = true;
+					selectedBlock = [];
+				} else{
+					console.log("Maiden can't be placed at player's castle!");
+				}
+			}
+			
 		}
-		
-		selectedBlock = [];
-		selectedCaptured = [];
-	}
+	} 
+	
+	selectedCaptured = [];
+	selectedBlock = [];
+	
 	
   }
   else {
@@ -494,11 +557,13 @@ function onDocumentMouseDown(event) {
 				break;
 			}
 		}
+		
+		console.log("selected captured pawn: " + selectedCaptured[0].type);
 	} 
 	else {
 		selectedCaptured = [];
 		if (selectedPawn.length > 0) {
-					
+			// console.log("selected pawn: " + selectedPawn[0].type)
 			var intersectBlock = raycaster.intersectObjects(rcBlock);
 			var selectedBlock = [];
 		
@@ -506,7 +571,7 @@ function onDocumentMouseDown(event) {
 				for(var i=0;i<board.length;i++){
 					if(intersectBlock[0].object == board[i].object){
 						selectedBlock.push(board[i]);
-						console.log("selected block pos: " + board[i].positionX + ", " + board[i].positionY);
+						// console.log("selected block pos: " + board[i].positionX + ", " + board[i].positionY);
 					}
 				}
 		
@@ -516,7 +581,7 @@ function onDocumentMouseDown(event) {
 				xTo = selectedBlock[0].positionX;
 				yTo = selectedBlock[0].positionY;
 				
-				console.log(xFrom +"; "+yFrom+"; "+xTo+"; "+yTo);
+				// console.log(xFrom +"; "+yFrom+"; "+xTo+"; "+yTo);
 							
 				if(isValidMove(xFrom, yFrom, xTo, yTo, selectedPawn[0])){
 					// Capturing pawn stuffs code will goes here
@@ -580,7 +645,11 @@ function onDocumentMouseDown(event) {
 									capturedMesh.position.set(jail[capturedByP.length].object.position.x, capturedPawn.object.position.y, jail[capturedByP.length].object.position.z);
 									scene.add(capturedMesh);
 									
-									capturedByP.push(new Piece(capturedPawn.type, capturedMesh, capturedByP.length, 0, true));
+									if(capturedPawn.type === "enchanted"){
+										capturedByP.push(new Piece("maiden", capturedMesh, capturedByP.length, 0, true));
+									} else {
+										capturedByP.push(new Piece(capturedPawn.type, capturedMesh, capturedByP.length, 0, true));
+									}
 									
 								}
 								
@@ -636,11 +705,15 @@ function onDocumentMouseDown(event) {
 									
 									
 									var capturedMesh = new THREE.Mesh(geometries.pawnMesh, materials.pawnEMat);
-									capturedMesh.position.set(jail[capturedByE.length+3].object.position.x, capturedPawn.object.position.y, jail[capturedByE.length+3].object.position.z);
+									capturedMesh.position.set(jail[capturedByE.length+6].object.position.x, capturedPawn.object.position.y, jail[capturedByE.length+6].object.position.z);
+									
 									scene.add(capturedMesh);
 									
-									capturedByE.push(new Piece(capturedPawn.type, capturedMesh, capturedByE.length, 5, false));
-									
+									if(capturedPawn.type === "enchanted"){
+										capturedByE.push(new Piece("maiden", capturedMesh, capturedByE.length, 5, false));
+									} else{
+										capturedByE.push(new Piece(capturedPawn.type, capturedMesh, capturedByE.length, 5, false));
+									}
 								}
 								
 								scene.remove(capturedPawn.object);
@@ -759,9 +832,12 @@ function onDocumentMouseDown(event) {
 				for(var i=0;i<pawn.length;i++){
 					if(intersectPawn[0].object == pawn[i].object){
 						selectedPawn.push(pawn[i]);
-						console.log("selected pawn pos: " + pawn[i].positionX + ", " + pawn[i].positionY);
+						// console.log("selected pawn pos: " + pawn[i].positionX + ", " + pawn[i].positionY);
+						break;
 					}
 				}
+				
+				console.log("selected pawn: " + selectedPawn[0].type);
 			} else{
 				selectedPawn = [];
 			}
