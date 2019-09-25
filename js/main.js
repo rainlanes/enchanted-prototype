@@ -16,9 +16,10 @@ class Block {
 }
 
 class JailBlock {
-	constructor(object, position) {
+	constructor(object, isFilled, isPlayer) {
 		this.object = object;
-		this.position = position;
+		this.isFilled = isFilled;
+		this.isPlayer = isPlayer;
 	}
 }
 
@@ -143,19 +144,19 @@ function initBoard() {
   jailMesh12 = new THREE.Mesh(geometries.blockMesh, materials.boardMat);
   jailMesh12.position.set(1.5, 0.22, -6);
   
-  jail.push(new JailBlock(jailMesh1, 1));
-  jail.push(new JailBlock(jailMesh2, 2));
-  jail.push(new JailBlock(jailMesh3, 3));
-  jail.push(new JailBlock(jailMesh4, 4));
-  jail.push(new JailBlock(jailMesh5, 5));
-  jail.push(new JailBlock(jailMesh6, 6));
+  jail.push(new JailBlock(jailMesh1, false, true));
+  jail.push(new JailBlock(jailMesh2, false, true));
+  jail.push(new JailBlock(jailMesh3, false, true));
+  jail.push(new JailBlock(jailMesh4, false, true));
+  jail.push(new JailBlock(jailMesh5, false, true));
+  jail.push(new JailBlock(jailMesh6, false, true));
   
-  jail.push(new JailBlock(jailMesh7, 7));
-  jail.push(new JailBlock(jailMesh8, 8));
-  jail.push(new JailBlock(jailMesh9, 9));
-  jail.push(new JailBlock(jailMesh10, 10));
-  jail.push(new JailBlock(jailMesh11, 11));
-  jail.push(new JailBlock(jailMesh12, 12));
+  jail.push(new JailBlock(jailMesh7, false, false));
+  jail.push(new JailBlock(jailMesh8, false, false));
+  jail.push(new JailBlock(jailMesh9, false, false));
+  jail.push(new JailBlock(jailMesh10, false, false));
+  jail.push(new JailBlock(jailMesh11, false, false));
+  jail.push(new JailBlock(jailMesh12, false, false));
 
   
   for(var i = 0;i<jail.length;i++){
@@ -466,6 +467,13 @@ function onDocumentMouseDown(event) {
 			// Select player' capture
 			if(selectedCaptured[0].positionY == 0){
 				if(selectedBlock[0].positionY != 4){
+					for(var x=0;x<jail.length;x++){
+						if(selectedCaptured[0].object.position.x == jail[x].object.position.x && selectedCaptured[0].object.position.z == jail[x].object.position.z){
+							jail[x].isFilled = false;
+							break;
+						}
+					}
+					
 					selectedCaptured[0].object.position.set(
 									selectedBlock[0].object.position.x,
 									selectedCaptured[0].object.position.y,
@@ -499,6 +507,13 @@ function onDocumentMouseDown(event) {
 			// Select enemy' capture
 			else{
 				if(selectedBlock[0].positionY != 1){
+					for(var x=0;x<jail.length;x++){
+						if(selectedCaptured[0].object.position.x == jail[x].object.position.x && selectedCaptured[0].object.position.z == jail[x].object.position.z){
+							jail[x].isFilled = false;
+							break;
+						}
+					}
+					
 					selectedCaptured[0].object.position.set(
 									selectedBlock[0].object.position.x,
 									selectedCaptured[0].object.position.y,
@@ -640,10 +655,17 @@ function onDocumentMouseDown(event) {
 									const materials = createMaterials();
 									const geometries = createGeometries();
 									
-									
-									var capturedMesh = new THREE.Mesh(geometries.pawnMesh, materials.pawnPMat);
-									capturedMesh.position.set(jail[capturedByP.length].object.position.x, capturedPawn.object.position.y, jail[capturedByP.length].object.position.z);
-									scene.add(capturedMesh);
+									for(var x=0;x<jail.length;x++){
+										if((!jail[x].isFilled) && (jail[x].isPlayer)){
+											var capturedMesh = new THREE.Mesh(geometries.pawnMesh, materials.pawnPMat);
+											capturedMesh.position.set(jail[x].object.position.x, capturedPawn.object.position.y, jail[x].object.position.z);
+											
+											scene.add(capturedMesh);
+											
+											jail[x].isFilled = true;
+											break;
+										}
+									}
 									
 									if(capturedPawn.type === "enchanted"){
 										capturedByP.push(new Piece("maiden", capturedMesh, capturedByP.length, 0, true));
@@ -703,11 +725,17 @@ function onDocumentMouseDown(event) {
 									const materials = createMaterials();
 									const geometries = createGeometries();
 									
+									for(var x=0;x<jail.length;x++){
+										if((!jail[x].isFilled) && (!jail[x].isPlayer)){
+											var capturedMesh = new THREE.Mesh(geometries.pawnMesh, materials.pawnEMat);
+											capturedMesh.position.set(jail[x].object.position.x, capturedPawn.object.position.y, jail[x].object.position.z);
 									
-									var capturedMesh = new THREE.Mesh(geometries.pawnMesh, materials.pawnEMat);
-									capturedMesh.position.set(jail[capturedByE.length+6].object.position.x, capturedPawn.object.position.y, jail[capturedByE.length+6].object.position.z);
-									
-									scene.add(capturedMesh);
+											scene.add(capturedMesh);
+											
+											jail[x].isFilled = true;
+											break;
+										}
+									}
 									
 									if(capturedPawn.type === "enchanted"){
 										capturedByE.push(new Piece("maiden", capturedMesh, capturedByE.length, 5, false));
@@ -828,7 +856,6 @@ function onDocumentMouseDown(event) {
 			var intersectPawn = raycaster.intersectObjects(rcPawn);
 			
 			if (intersectPawn.length > 0){
-				// intersectPawn[0].object.callback();
 				for(var i=0;i<pawn.length;i++){
 					if(intersectPawn[0].object == pawn[i].object){
 						selectedPawn.push(pawn[i]);
