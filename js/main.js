@@ -35,6 +35,12 @@ class Piece {
 
 var rcPawn,rcBlock, rcCaptured;
 
+var state = new Array(4);
+
+for (var i = 0; i < state.length; i++) {
+  state[i] = new Array(3);
+}
+
 var pawn = [];
 var board = [];
 var jail = [];
@@ -48,6 +54,28 @@ var capturedByP = [];
 var capturedByE = [];
 
 var playerTurn = true;
+
+function updateState(){
+	for (var i = 0; i < state.length; i++){
+		state[i][0] = null;
+		state[i][1] = null;
+		state[i][2] = null;
+	}
+
+	console.log(state);
+	
+	for(var i=0;i<pawn.length;i++){
+		var x, y;
+		x = pawn[i].positionX - 1;
+		y = pawn[i].positionY - 1;
+		
+		console.log(x + ", " + y);
+		
+		state[y][x] = pawn[i];
+	}
+	
+	console.log(state);
+}
 
 function initBoard() {
   const materials = createMaterials();
@@ -218,6 +246,8 @@ function init() {
   createLights();
   createMeshes();
   createRenderer();
+  
+  updateState();
   
   // start the animation loop
   renderer.setAnimationLoop(() => {
@@ -871,6 +901,7 @@ function onDocumentMouseDown(event) {
 		}
 	}
   }
+  updateState();
 }
 
 init();
